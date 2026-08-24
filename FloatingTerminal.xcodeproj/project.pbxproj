@@ -1,0 +1,619 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		08AAE215ACC2B314B4423F7B /* TerminalSessionSnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = 56BA3959D9CE89729EFAF1CB /* TerminalSessionSnapshot.swift */; };
+		0CED07D587DF2CE88A92611A /* UserDefaultsTerminalSessionSnapshotStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 41F3420A69EC7ED56D4EE1CF /* UserDefaultsTerminalSessionSnapshotStore.swift */; };
+		11357DD215F5C2F673D3A11D /* TerminalView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E6CBBF26FD2A688E703DE6 /* TerminalView.swift */; };
+		1D55A59EBE8F923D72753ED5 /* RecordingLocalProcessTerminalView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8566FF1571E2D25F2AFD3FE /* RecordingLocalProcessTerminalView.swift */; };
+		29186310233D6EA9CC0C47E8 /* FloatingTerminalApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 32D4F54A5157E4F31C9C3959 /* FloatingTerminalApp.swift */; };
+		2AC37DCEF1AAEC8A9893BEA4 /* HotKeySettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F68F22B2881980600AABE7F /* HotKeySettings.swift */; };
+		328F7F2B15F4C6ABFB83DE21 /* HotKeyRecorderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BDA3055184B9083D3C72318 /* HotKeyRecorderView.swift */; };
+		333AB09275C3132FBBFEBF1B /* TerminalPanelController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5F768F262BC9C04A959FDDD /* TerminalPanelController.swift */; };
+		37F84E7058E5517CE706D0A4 /* SettingsWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 54FA36160F8829A0150E6CE0 /* SettingsWindowController.swift */; };
+		5A0C353FDB0BA51EAB15A919 /* TerminalViewState.swift in Sources */ = {isa = PBXBuildFile; fileRef = B9203421FD3C83D005D47727 /* TerminalViewState.swift */; };
+		5BAAAA847B38724B922B4B35 /* GlobalHotKeyController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2D6D358ADF2DFF487AAA80E /* GlobalHotKeyController.swift */; };
+		611D81F2C34E03F13E708021 /* TerminalWorkspaceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 45E02CCF0FACAE37317C07C4 /* TerminalWorkspaceView.swift */; };
+		615FA69467D58F20FD16014F /* TerminalWorkspaceContainerController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86F9CF260A1076B37683AB42 /* TerminalWorkspaceContainerController.swift */; };
+		6658A49F64B35D95D1394B05 /* TerminalSessionSnapshotStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2ABCF458B9EBF97596BCE226 /* TerminalSessionSnapshotStoreTests.swift */; };
+		68506981F6E7321B95EA1CE9 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = DFF49770261804BC42536041 /* AppDelegate.swift */; };
+		730B3440D6A0207CE1709687 /* SwiftTermView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCFDE7E7317FDAC9D07A1B9A /* SwiftTermView.swift */; };
+		775B44FEEE83BC38DC39BE5C /* SettingsViewState.swift in Sources */ = {isa = PBXBuildFile; fileRef = E31BE982D0FB22A7F7C6823C /* SettingsViewState.swift */; };
+		86924FCD91E4756E7FBE90C4 /* TerminalSessionSnapshotStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = B9D8C2EA65850F462780DC8A /* TerminalSessionSnapshotStore.swift */; };
+		B233A5CF238F84D027187F80 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD70588E4295672BF1940E10 /* SettingsView.swift */; };
+		BB0339559CA78B8A6CEC694B /* PreviewTerminalSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = DAFC220B097626CF0257EE42 /* PreviewTerminalSession.swift */; };
+		C06888D99E5D1F03C05F9375 /* TerminalSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A9F6289DBCA779D2C6020E7 /* TerminalSession.swift */; };
+		D39DB1EBB93E8D087B0C90BE /* TerminalViewStateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83D2A31A3133FDAA4DE282DF /* TerminalViewStateTests.swift */; };
+		E4C3C26FD6E32F53ADDC40D9 /* HotKeySettingsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 052525C7A8F557585BB583C9 /* HotKeySettingsTests.swift */; };
+		EDC2FA70A74B964FCCA4EF75 /* SwiftTerm in Frameworks */ = {isa = PBXBuildFile; productRef = 3C0BAD273BDDDD4E6228D06F /* SwiftTerm */; };
+		FBD18FC45BF2CC2D966CBE52 /* TerminalWorkspaceViewState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 71219F4914B2DB4DC1EA17AA /* TerminalWorkspaceViewState.swift */; };
+		FCA966DDB235E14795D2457A /* SwiftTermSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15A882D39A05A08B77D0B985 /* SwiftTermSession.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		BDF5E155DE86E79E6F6176F0 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = AC1444A23698ACDEE7C4008C /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = B8857DC9B748FEA1E6BCC710;
+			remoteInfo = FloatingTerminal;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		052525C7A8F557585BB583C9 /* HotKeySettingsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HotKeySettingsTests.swift; sourceTree = "<group>"; };
+		15A882D39A05A08B77D0B985 /* SwiftTermSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftTermSession.swift; sourceTree = "<group>"; };
+		1A9F6289DBCA779D2C6020E7 /* TerminalSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerminalSession.swift; sourceTree = "<group>"; };
+		1F68F22B2881980600AABE7F /* HotKeySettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HotKeySettings.swift; sourceTree = "<group>"; };
+		2ABCF458B9EBF97596BCE226 /* TerminalSessionSnapshotStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerminalSessionSnapshotStoreTests.swift; sourceTree = "<group>"; };
+		2EE22F30371909C252D9E74E /* FloatingTerminal.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = FloatingTerminal.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		32B2030424C9D740DA88BD9B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		32D4F54A5157E4F31C9C3959 /* FloatingTerminalApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FloatingTerminalApp.swift; sourceTree = "<group>"; };
+		41F3420A69EC7ED56D4EE1CF /* UserDefaultsTerminalSessionSnapshotStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserDefaultsTerminalSessionSnapshotStore.swift; sourceTree = "<group>"; };
+		45E02CCF0FACAE37317C07C4 /* TerminalWorkspaceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerminalWorkspaceView.swift; sourceTree = "<group>"; };
+		54FA36160F8829A0150E6CE0 /* SettingsWindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsWindowController.swift; sourceTree = "<group>"; };
+		56BA3959D9CE89729EFAF1CB /* TerminalSessionSnapshot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerminalSessionSnapshot.swift; sourceTree = "<group>"; };
+		71219F4914B2DB4DC1EA17AA /* TerminalWorkspaceViewState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerminalWorkspaceViewState.swift; sourceTree = "<group>"; };
+		7BDA3055184B9083D3C72318 /* HotKeyRecorderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HotKeyRecorderView.swift; sourceTree = "<group>"; };
+		83D2A31A3133FDAA4DE282DF /* TerminalViewStateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerminalViewStateTests.swift; sourceTree = "<group>"; };
+		86F9CF260A1076B37683AB42 /* TerminalWorkspaceContainerController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerminalWorkspaceContainerController.swift; sourceTree = "<group>"; };
+		B2D6D358ADF2DFF487AAA80E /* GlobalHotKeyController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlobalHotKeyController.swift; sourceTree = "<group>"; };
+		B5E6CBBF26FD2A688E703DE6 /* TerminalView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerminalView.swift; sourceTree = "<group>"; };
+		B5F768F262BC9C04A959FDDD /* TerminalPanelController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerminalPanelController.swift; sourceTree = "<group>"; };
+		B9203421FD3C83D005D47727 /* TerminalViewState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerminalViewState.swift; sourceTree = "<group>"; };
+		B9D8C2EA65850F462780DC8A /* TerminalSessionSnapshotStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerminalSessionSnapshotStore.swift; sourceTree = "<group>"; };
+		BCFDE7E7317FDAC9D07A1B9A /* SwiftTermView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftTermView.swift; sourceTree = "<group>"; };
+		C8566FF1571E2D25F2AFD3FE /* RecordingLocalProcessTerminalView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordingLocalProcessTerminalView.swift; sourceTree = "<group>"; };
+		DAFC220B097626CF0257EE42 /* PreviewTerminalSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreviewTerminalSession.swift; sourceTree = "<group>"; };
+		DD70588E4295672BF1940E10 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		DFF49770261804BC42536041 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		E31BE982D0FB22A7F7C6823C /* SettingsViewState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsViewState.swift; sourceTree = "<group>"; };
+		EA8B2618F0E1435ABD54BEE3 /* FloatingTerminalTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = FloatingTerminalTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		B4041C5BCF42F6E0BA5D738D /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				EDC2FA70A74B964FCCA4EF75 /* SwiftTerm in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		0313ABC01493282D62F45DD1 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				56BA3959D9CE89729EFAF1CB /* TerminalSessionSnapshot.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		1866FCD69C036224D6B9D7D7 /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				CD64DB76EA86805FE6D2DC96 /* HotKey */,
+				C0C59BCEEBCE94D97ADF2F76 /* Persistence */,
+				5BE2EC04E79FF2347EAC6E64 /* Stubs */,
+				40886ABA30514C1FDE316088 /* Terminal */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		18AFB1A0E1D3F16DD27CE505 /* Settings */ = {
+			isa = PBXGroup;
+			children = (
+				7BDA3055184B9083D3C72318 /* HotKeyRecorderView.swift */,
+				DD70588E4295672BF1940E10 /* SettingsView.swift */,
+				E31BE982D0FB22A7F7C6823C /* SettingsViewState.swift */,
+			);
+			path = Settings;
+			sourceTree = "<group>";
+		};
+		31BB58A4333F2E27598DEEA5 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				2EE22F30371909C252D9E74E /* FloatingTerminal.app */,
+				EA8B2618F0E1435ABD54BEE3 /* FloatingTerminalTests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		40886ABA30514C1FDE316088 /* Terminal */ = {
+			isa = PBXGroup;
+			children = (
+				C8566FF1571E2D25F2AFD3FE /* RecordingLocalProcessTerminalView.swift */,
+				15A882D39A05A08B77D0B985 /* SwiftTermSession.swift */,
+			);
+			path = Terminal;
+			sourceTree = "<group>";
+		};
+		41D739AEED4A6BF2AC40CC1F /* Desktop */ = {
+			isa = PBXGroup;
+			children = (
+				18AFB1A0E1D3F16DD27CE505 /* Settings */,
+				B6DC296115F354DFECF62DCC /* Terminal */,
+			);
+			path = Desktop;
+			sourceTree = "<group>";
+		};
+		5BE2EC04E79FF2347EAC6E64 /* Stubs */ = {
+			isa = PBXGroup;
+			children = (
+				DAFC220B097626CF0257EE42 /* PreviewTerminalSession.swift */,
+			);
+			path = Stubs;
+			sourceTree = "<group>";
+		};
+		77FE032CFDDEF6630BA67712 /* Core */ = {
+			isa = PBXGroup;
+			children = (
+				0313ABC01493282D62F45DD1 /* Models */,
+				AECEE6CE0EA7DE8F1588FE65 /* Protocols */,
+			);
+			path = Core;
+			sourceTree = "<group>";
+		};
+		82BEDECA6ABEDD68624C9B7A /* App */ = {
+			isa = PBXGroup;
+			children = (
+				DFF49770261804BC42536041 /* AppDelegate.swift */,
+				32D4F54A5157E4F31C9C3959 /* FloatingTerminalApp.swift */,
+				54FA36160F8829A0150E6CE0 /* SettingsWindowController.swift */,
+				B5F768F262BC9C04A959FDDD /* TerminalPanelController.swift */,
+			);
+			path = App;
+			sourceTree = "<group>";
+		};
+		AAB5FFD409A4A96E7F0B43D4 /* FloatingTerminalTests */ = {
+			isa = PBXGroup;
+			children = (
+				052525C7A8F557585BB583C9 /* HotKeySettingsTests.swift */,
+				2ABCF458B9EBF97596BCE226 /* TerminalSessionSnapshotStoreTests.swift */,
+				83D2A31A3133FDAA4DE282DF /* TerminalViewStateTests.swift */,
+			);
+			path = FloatingTerminalTests;
+			sourceTree = "<group>";
+		};
+		AECEE6CE0EA7DE8F1588FE65 /* Protocols */ = {
+			isa = PBXGroup;
+			children = (
+				1A9F6289DBCA779D2C6020E7 /* TerminalSession.swift */,
+				B9D8C2EA65850F462780DC8A /* TerminalSessionSnapshotStore.swift */,
+			);
+			path = Protocols;
+			sourceTree = "<group>";
+		};
+		B62AC53D2D75DC35C1EEC9AD /* FloatingTerminal */ = {
+			isa = PBXGroup;
+			children = (
+				32B2030424C9D740DA88BD9B /* Info.plist */,
+				82BEDECA6ABEDD68624C9B7A /* App */,
+				77FE032CFDDEF6630BA67712 /* Core */,
+				FA7A8D97A0B8E9B60FA27994 /* Presentation */,
+				1866FCD69C036224D6B9D7D7 /* Services */,
+			);
+			path = FloatingTerminal;
+			sourceTree = "<group>";
+		};
+		B6B584D0E41613C1ED829C0B = {
+			isa = PBXGroup;
+			children = (
+				B62AC53D2D75DC35C1EEC9AD /* FloatingTerminal */,
+				AAB5FFD409A4A96E7F0B43D4 /* FloatingTerminalTests */,
+				31BB58A4333F2E27598DEEA5 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		B6DC296115F354DFECF62DCC /* Terminal */ = {
+			isa = PBXGroup;
+			children = (
+				BCFDE7E7317FDAC9D07A1B9A /* SwiftTermView.swift */,
+				B5E6CBBF26FD2A688E703DE6 /* TerminalView.swift */,
+				B9203421FD3C83D005D47727 /* TerminalViewState.swift */,
+				86F9CF260A1076B37683AB42 /* TerminalWorkspaceContainerController.swift */,
+				45E02CCF0FACAE37317C07C4 /* TerminalWorkspaceView.swift */,
+				71219F4914B2DB4DC1EA17AA /* TerminalWorkspaceViewState.swift */,
+			);
+			path = Terminal;
+			sourceTree = "<group>";
+		};
+		C0C59BCEEBCE94D97ADF2F76 /* Persistence */ = {
+			isa = PBXGroup;
+			children = (
+				41F3420A69EC7ED56D4EE1CF /* UserDefaultsTerminalSessionSnapshotStore.swift */,
+			);
+			path = Persistence;
+			sourceTree = "<group>";
+		};
+		CD64DB76EA86805FE6D2DC96 /* HotKey */ = {
+			isa = PBXGroup;
+			children = (
+				B2D6D358ADF2DFF487AAA80E /* GlobalHotKeyController.swift */,
+				1F68F22B2881980600AABE7F /* HotKeySettings.swift */,
+			);
+			path = HotKey;
+			sourceTree = "<group>";
+		};
+		FA7A8D97A0B8E9B60FA27994 /* Presentation */ = {
+			isa = PBXGroup;
+			children = (
+				41D739AEED4A6BF2AC40CC1F /* Desktop */,
+			);
+			path = Presentation;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		3191360B693FB6453FCEC91A /* FloatingTerminalTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 89A7EBA05789EB3BD279FBC2 /* Build configuration list for PBXNativeTarget "FloatingTerminalTests" */;
+			buildPhases = (
+				3897D41B59D4AC47DD1E8CC0 /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				09DC78055F64E0993ECF891B /* PBXTargetDependency */,
+			);
+			name = FloatingTerminalTests;
+			packageProductDependencies = (
+			);
+			productName = FloatingTerminalTests;
+			productReference = EA8B2618F0E1435ABD54BEE3 /* FloatingTerminalTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		B8857DC9B748FEA1E6BCC710 /* FloatingTerminal */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = F59D38A98EAB84FFB8567C18 /* Build configuration list for PBXNativeTarget "FloatingTerminal" */;
+			buildPhases = (
+				C999E015BF8F99D12E469D07 /* Sources */,
+				B4041C5BCF42F6E0BA5D738D /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = FloatingTerminal;
+			packageProductDependencies = (
+				3C0BAD273BDDDD4E6228D06F /* SwiftTerm */,
+			);
+			productName = FloatingTerminal;
+			productReference = 2EE22F30371909C252D9E74E /* FloatingTerminal.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		AC1444A23698ACDEE7C4008C /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 2600;
+				TargetAttributes = {
+				};
+			};
+			buildConfigurationList = 8680728B19E456B4CE5CD590 /* Build configuration list for PBXProject "FloatingTerminal" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = B6B584D0E41613C1ED829C0B;
+			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				D480EF254B89EB90B77220B6 /* XCRemoteSwiftPackageReference "SwiftTerm" */,
+			);
+			preferredProjectObjectVersion = 77;
+			productRefGroup = 31BB58A4333F2E27598DEEA5 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				B8857DC9B748FEA1E6BCC710 /* FloatingTerminal */,
+				3191360B693FB6453FCEC91A /* FloatingTerminalTests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		3897D41B59D4AC47DD1E8CC0 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				E4C3C26FD6E32F53ADDC40D9 /* HotKeySettingsTests.swift in Sources */,
+				6658A49F64B35D95D1394B05 /* TerminalSessionSnapshotStoreTests.swift in Sources */,
+				D39DB1EBB93E8D087B0C90BE /* TerminalViewStateTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		C999E015BF8F99D12E469D07 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				68506981F6E7321B95EA1CE9 /* AppDelegate.swift in Sources */,
+				29186310233D6EA9CC0C47E8 /* FloatingTerminalApp.swift in Sources */,
+				5BAAAA847B38724B922B4B35 /* GlobalHotKeyController.swift in Sources */,
+				328F7F2B15F4C6ABFB83DE21 /* HotKeyRecorderView.swift in Sources */,
+				2AC37DCEF1AAEC8A9893BEA4 /* HotKeySettings.swift in Sources */,
+				BB0339559CA78B8A6CEC694B /* PreviewTerminalSession.swift in Sources */,
+				1D55A59EBE8F923D72753ED5 /* RecordingLocalProcessTerminalView.swift in Sources */,
+				B233A5CF238F84D027187F80 /* SettingsView.swift in Sources */,
+				775B44FEEE83BC38DC39BE5C /* SettingsViewState.swift in Sources */,
+				37F84E7058E5517CE706D0A4 /* SettingsWindowController.swift in Sources */,
+				FCA966DDB235E14795D2457A /* SwiftTermSession.swift in Sources */,
+				730B3440D6A0207CE1709687 /* SwiftTermView.swift in Sources */,
+				333AB09275C3132FBBFEBF1B /* TerminalPanelController.swift in Sources */,
+				C06888D99E5D1F03C05F9375 /* TerminalSession.swift in Sources */,
+				08AAE215ACC2B314B4423F7B /* TerminalSessionSnapshot.swift in Sources */,
+				86924FCD91E4756E7FBE90C4 /* TerminalSessionSnapshotStore.swift in Sources */,
+				11357DD215F5C2F673D3A11D /* TerminalView.swift in Sources */,
+				5A0C353FDB0BA51EAB15A919 /* TerminalViewState.swift in Sources */,
+				615FA69467D58F20FD16014F /* TerminalWorkspaceContainerController.swift in Sources */,
+				611D81F2C34E03F13E708021 /* TerminalWorkspaceView.swift in Sources */,
+				FBD18FC45BF2CC2D966CBE52 /* TerminalWorkspaceViewState.swift in Sources */,
+				0CED07D587DF2CE88A92611A /* UserDefaultsTerminalSessionSnapshotStore.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		09DC78055F64E0993ECF891B /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = B8857DC9B748FEA1E6BCC710 /* FloatingTerminal */;
+			targetProxy = BDF5E155DE86E79E6F6176F0 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		26F93C537B0BC9D50227A979 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				COMBINE_HIDPI_IMAGES = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				SDKROOT = macosx;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/FloatingTerminal.app/Contents/MacOS/FloatingTerminal";
+			};
+			name = Debug;
+		};
+		331D25BD50719FC0CCD5AD0B /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = "";
+				COMBINE_HIDPI_IMAGES = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = FloatingTerminal/Info.plist;
+				INFOPLIST_KEY_LSUIElement = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.tsitser.dev.FloatingTerminal;
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+		3CF885A3F5ED80BB205EA1F3 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = com.tsitser.dev.FloatingTerminal;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 6.0;
+			};
+			name = Debug;
+		};
+		9A5AA26B53C08F3FEDC1F812 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = com.tsitser.dev.FloatingTerminal;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 6.0;
+			};
+			name = Release;
+		};
+		B8072330ABCF019B33C15DAA /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = "";
+				COMBINE_HIDPI_IMAGES = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = FloatingTerminal/Info.plist;
+				INFOPLIST_KEY_LSUIElement = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.tsitser.dev.FloatingTerminal;
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		E32E1779BE583885D8B9D672 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				COMBINE_HIDPI_IMAGES = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				SDKROOT = macosx;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/FloatingTerminal.app/Contents/MacOS/FloatingTerminal";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		8680728B19E456B4CE5CD590 /* Build configuration list for PBXProject "FloatingTerminal" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				3CF885A3F5ED80BB205EA1F3 /* Debug */,
+				9A5AA26B53C08F3FEDC1F812 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		89A7EBA05789EB3BD279FBC2 /* Build configuration list for PBXNativeTarget "FloatingTerminalTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				26F93C537B0BC9D50227A979 /* Debug */,
+				E32E1779BE583885D8B9D672 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		F59D38A98EAB84FFB8567C18 /* Build configuration list for PBXNativeTarget "FloatingTerminal" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B8072330ABCF019B33C15DAA /* Debug */,
+				331D25BD50719FC0CCD5AD0B /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		D480EF254B89EB90B77220B6 /* XCRemoteSwiftPackageReference "SwiftTerm" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/migueldeicaza/SwiftTerm.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.20.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		3C0BAD273BDDDD4E6228D06F /* SwiftTerm */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = D480EF254B89EB90B77220B6 /* XCRemoteSwiftPackageReference "SwiftTerm" */;
+			productName = SwiftTerm;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = AC1444A23698ACDEE7C4008C /* Project object */;
+}

@@ -1,0 +1,250 @@
+import AppKit
+import SwiftUI
+
+private final class FloatingTerminalPanel: NSPanel {
+    var increaseFontSize: (() -> Void)?
+    var decreaseFontSize: (() -> Void)?
+    var resetFontSize: (() -> Void)?
+
+    override var canBecomeKey: Bool { true }
+    override var canBecomeMain: Bool { false }
+
+    override func performKeyEquivalent(with event: NSEvent) -> Bool {
+        let modifiers = event.modifierFlags.intersection(.deviceIndependentFlagsMask)
+        guard modifiers == .command else { return super.performKeyEquivalent(with: event) }
+
+        switch event.charactersIgnoringModifiers {
+        case "+", "=": increaseFontSize?(); return true
+        case "-": decreaseFontSize?(); return true
+        case "0": resetFontSize?(); return true
+        default: return super.performKeyEquivalent(with: event)
+        }
+    }
+}
+
+private extension NSToolbarItem.Identifier {
+    static let floatingTerminalSidebar = NSToolbarItem.Identifier("FloatingTerminal.sidebar")
+    static let floatingTerminalNew = NSToolbarItem.Identifier("FloatingTerminal.new")
+    static let floatingTerminalSettings = NSToolbarItem.Identifier("FloatingTerminal.settings")
+}
+
+private enum PanelPersistence {
+    static let frameAutosaveName = "FloatingTerminalPanelFrame"
+}
+
+@MainActor
+final class TerminalPanelController: NSObject, NSWindowDelegate, NSToolbarDelegate {
+    private let workspaceState = TerminalWorkspaceViewState()
+    private lazy var panel: FloatingTerminalPanel = makePanel()
+    private lazy var settingsWindowController = SettingsWindowController(selectedTerminalSession: { [weak self] in
+        self?.workspaceState.selectedSession
+    })
+    private var hasPositionedPanel = false
+    private var shouldRestoreFocusUntil: Date?
+
+    override init() {
+        super.init()
+        workspaceState.onCommandSubmitted = { [weak self] command in
+            guard command.trimmingCharacters(in: .whitespaces).hasPrefix("open") else { return }
+            self?.shouldRestoreFocusUntil = Date().addingTimeInterval(5)
+        }
+        NSWorkspace.shared.notificationCenter.addObserver(
+            self,
+            selector: #selector(workspaceDidActivateApplication),
+            name: NSWorkspace.didActivateApplicationNotification,
+            object: nil
+        )
+    }
+
+    deinit {
+        NSWorkspace.shared.notificationCenter.removeObserver(self)
+    }
+
+    func toggle(anchorButton: NSStatusBarButton? = nil) {
+        panel.isVisible ? hide() : show(anchorButton: anchorButton)
+    }
+
+    func show(anchorButton: NSStatusBarButton? = nil) {
+        if !hasPositionedPanel {
+            positionBelowMenuBar(anchorButton: anchorButton)
+            hasPositionedPanel = true
+        }
+        NSApp.activate(ignoringOtherApps: true)
+        panel.makeKeyAndOrderFront(nil)
+        DispatchQueue.main.async { [weak self] in
+            guard let self else { return }
+            self.panel.makeFirstResponder(self.workspaceState.selectedTerminalView)
+        }
+    }
+
+    func hide() {
+        settingsWindowController.hide()
+        panel.orderOut(nil)
+        shouldRestoreFocusUntil = nil
+    }
+
+    func stopAllSessions() {
+        workspaceState.stopAll()
+    }
+
+    func increaseFontSize() { workspaceState.selectedSession?.increaseFontSize() }
+    func decreaseFontSize() { workspaceState.selectedSession?.decreaseFontSize() }
+    func resetFontSize() { workspaceState.selectedSession?.resetFontSize() }
+
+    func createTerminal(in workingDirectory: String? = nil) {
+        workspaceState.restore()
+        workspaceState.createTerminal(in: workingDirectory)
+        show()
+    }
+
+    func windowShouldClose(_ sender: NSWindow) -> Bool {
+        hide()
+        return false
+    }
+
+    private func makePanel() -> FloatingTerminalPanel {
+        let panel = FloatingTerminalPanel(
+            contentRect: NSRect(x: 0, y: 0, width: 900, height: 560),
+            styleMask: [.titled, .closable, .miniaturizable, .resizable],
+            backing: .buffered,
+            defer: false
+        )
+        panel.isReleasedWhenClosed = false
+        panel.hidesOnDeactivate = false
+        panel.title = "FloatingTerminal"
+        panel.titlebarAppearsTransparent = false
+        panel.appearance = NSAppearance(named: .darkAqua)
+        panel.level = .statusBar
+        panel.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
+        panel.minSize = NSSize(width: 480, height: 280)
+        panel.backgroundColor = .black
+        panel.isOpaque = true
+        panel.hasShadow = true
+        panel.setFrameAutosaveName(PanelPersistence.frameAutosaveName)
+        hasPositionedPanel = panel.setFrameUsingName(PanelPersistence.frameAutosaveName, force: true)
+            && isVisibleOnConnectedDisplay(panel.frame)
+        panel.increaseFontSize = { [weak self] in self?.increaseFontSize() }
+        panel.decreaseFontSize = { [weak self] in self?.decreaseFontSize() }
+        panel.resetFontSize = { [weak self] in self?.resetFontSize() }
+        panel.delegate = self
+        panel.toolbar = makeToolbar()
+        panel.toolbarStyle = .unifiedCompact
+        panel.contentView = NSHostingView(rootView: TerminalWorkspaceView(
+            state: workspaceState,
+            dismiss: { [weak self] in self?.hide() }
+        ))
+        return panel
+    }
+
+    private func isVisibleOnConnectedDisplay(_ frame: NSRect) -> Bool {
+        NSScreen.screens.contains { screen in
+            let intersection = frame.intersection(screen.visibleFrame)
+            return intersection.width >= 80 && intersection.height >= 80
+        }
+    }
+
+    private func makeToolbar() -> NSToolbar {
+        let toolbar = NSToolbar(identifier: "FloatingTerminalToolbar")
+        toolbar.delegate = self
+        toolbar.displayMode = .iconOnly
+        return toolbar
+    }
+
+    func toolbarAllowedItemIdentifiers(_ toolbar: NSToolbar) -> [NSToolbarItem.Identifier] {
+        [.floatingTerminalSidebar, .flexibleSpace, .floatingTerminalNew, .floatingTerminalSettings]
+    }
+
+    func toolbarDefaultItemIdentifiers(_ toolbar: NSToolbar) -> [NSToolbarItem.Identifier] {
+        [.floatingTerminalSidebar, .flexibleSpace, .floatingTerminalNew, .floatingTerminalSettings]
+    }
+
+    func toolbar(
+        _ toolbar: NSToolbar,
+        itemForItemIdentifier itemIdentifier: NSToolbarItem.Identifier,
+        willBeInsertedIntoToolbar flag: Bool
+    ) -> NSToolbarItem? {
+        let item = NSToolbarItem(itemIdentifier: itemIdentifier)
+        item.target = self
+        switch itemIdentifier {
+        case .floatingTerminalSidebar:
+            item.label = "Terminals"
+            item.toolTip = "Show terminals"
+            item.image = NSImage(systemSymbolName: "sidebar.left", accessibilityDescription: "Show terminals")
+            item.action = #selector(toggleSidebar)
+        case .floatingTerminalNew:
+            item.label = "New Terminal"
+            item.toolTip = "New terminal"
+            item.image = NSImage(systemSymbolName: "plus", accessibilityDescription: "New terminal")
+            item.action = #selector(createNewTerminal)
+        case .floatingTerminalSettings:
+            item.label = "Settings"
+            item.toolTip = "Settings"
+            item.image = NSImage(systemSymbolName: "gearshape", accessibilityDescription: "Settings")
+            item.action = #selector(showSettings)
+        default:
+            return nil
+        }
+        return item
+    }
+
+    @objc private func toggleSidebar() {
+        workspaceState.toggleSidebar()
+    }
+
+    @objc private func createNewTerminal() {
+        let picker = NSOpenPanel()
+        picker.canChooseFiles = false
+        picker.canChooseDirectories = true
+        picker.allowsMultipleSelection = false
+        picker.canCreateDirectories = true
+        picker.prompt = "Open Terminal"
+        picker.beginSheetModal(for: panel) { [weak self] response in
+            guard response == .OK, let directory = picker.url else { return }
+            self?.createTerminal(in: directory.path)
+        }
+    }
+
+    @objc private func showSettings() {
+        settingsWindowController.show(above: panel)
+    }
+
+    @objc private func workspaceDidActivateApplication(_ notification: Notification) {
+        guard panel.isVisible,
+              let deadline = shouldRestoreFocusUntil,
+              deadline > Date(),
+              let application = notification.userInfo?[NSWorkspace.applicationUserInfoKey] as? NSRunningApplication,
+              application.processIdentifier != ProcessInfo.processInfo.processIdentifier
+        else { return }
+        shouldRestoreFocusUntil = nil
+        DispatchQueue.main.async { [weak self] in
+            guard let self, self.panel.isVisible else { return }
+            NSApp.activate(ignoringOtherApps: true)
+            self.panel.makeKeyAndOrderFront(nil)
+            self.panel.makeFirstResponder(self.workspaceState.selectedTerminalView)
+        }
+    }
+
+    private func positionBelowMenuBar(anchorButton: NSStatusBarButton?) {
+        let screen = anchorButton?.window?.screen
+            ?? NSScreen.screens.first(where: { $0.frame.contains(NSEvent.mouseLocation) })
+            ?? NSScreen.main
+        guard let screen else { return }
+        let visibleFrame = screen.visibleFrame
+        let margin: CGFloat = 12
+        let gap: CGFloat = 8
+        let size = NSSize(
+            width: min(900, visibleFrame.width - margin * 2),
+            height: min(560, visibleFrame.height - margin * 2)
+        )
+        let iconMidX: CGFloat
+        if let anchorButton, let window = anchorButton.window {
+            let buttonRect = anchorButton.convert(anchorButton.bounds, to: nil)
+            iconMidX = window.convertToScreen(buttonRect).midX
+        } else {
+            iconMidX = visibleFrame.maxX - margin - size.width / 2
+        }
+        let x = min(max(iconMidX - size.width / 2, visibleFrame.minX + margin), visibleFrame.maxX - size.width - margin)
+        let y = visibleFrame.maxY - size.height - gap
+        panel.setFrame(NSRect(origin: NSPoint(x: x, y: y), size: size), display: true)
+    }
+}
