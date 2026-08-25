@@ -26,10 +26,12 @@ private extension NSToolbarItem.Identifier {
     static let floatingTerminalSidebar = NSToolbarItem.Identifier("FloatingTerminal.sidebar")
     static let floatingTerminalNew = NSToolbarItem.Identifier("FloatingTerminal.new")
     static let floatingTerminalSettings = NSToolbarItem.Identifier("FloatingTerminal.settings")
+    static let floatingTerminalPin = NSToolbarItem.Identifier("FloatingTerminal.pin")
 }
 
 private enum PanelPersistence {
     static let frameAutosaveName = "FloatingTerminalPanelFrame"
+    static let windowPinnedKey = "FloatingTerminal.windowPinned"
 }
 
 @MainActor
@@ -41,6 +43,19 @@ final class TerminalPanelController: NSObject, NSWindowDelegate, NSToolbarDelega
     })
     private var hasPositionedPanel = false
     private var shouldRestoreFocusUntil: Date?
+    private var pinToolbarItem: NSToolbarItem?
+
+    private var isWindowPinned: Bool {
+        get {
+            guard UserDefaults.standard.object(forKey: PanelPersistence.windowPinnedKey) != nil else {
+                return true
+            }
+            return UserDefaults.standard.bool(forKey: PanelPersistence.windowPinnedKey)
+        }
+        set {
+            UserDefaults.standard.set(newValue, forKey: PanelPersistence.windowPinnedKey)
+        }
+    }
 
     override init() {
         super.init()
@@ -102,6 +117,11 @@ final class TerminalPanelController: NSObject, NSWindowDelegate, NSToolbarDelega
         return false
     }
 
+    func windowDidResignKey(_ notification: Notification) {
+        guard !isWindowPinned, !hasVisibleChildWindow else { return }
+        hide()
+    }
+
     private func makePanel() -> FloatingTerminalPanel {
         let panel = FloatingTerminalPanel(
             contentRect: NSRect(x: 0, y: 0, width: 900, height: 560),
@@ -151,11 +171,11 @@ final class TerminalPanelController: NSObject, NSWindowDelegate, NSToolbarDelega
     }
 
     func toolbarAllowedItemIdentifiers(_ toolbar: NSToolbar) -> [NSToolbarItem.Identifier] {
-        [.floatingTerminalSidebar, .flexibleSpace, .floatingTerminalNew, .floatingTerminalSettings]
+        [.floatingTerminalSidebar, .flexibleSpace, .floatingTerminalNew, .floatingTerminalPin, .floatingTerminalSettings]
     }
 
     func toolbarDefaultItemIdentifiers(_ toolbar: NSToolbar) -> [NSToolbarItem.Identifier] {
-        [.floatingTerminalSidebar, .flexibleSpace, .floatingTerminalNew, .floatingTerminalSettings]
+        [.floatingTerminalSidebar, .flexibleSpace, .floatingTerminalNew, .floatingTerminalPin, .floatingTerminalSettings]
     }
 
     func toolbar(
@@ -181,6 +201,10 @@ final class TerminalPanelController: NSObject, NSWindowDelegate, NSToolbarDelega
             item.toolTip = "Settings"
             item.image = NSImage(systemSymbolName: "gearshape", accessibilityDescription: "Settings")
             item.action = #selector(showSettings)
+        case .floatingTerminalPin:
+            pinToolbarItem = item
+            updatePinToolbarItem()
+            item.action = #selector(toggleWindowPin)
         default:
             return nil
         }
@@ -206,6 +230,26 @@ final class TerminalPanelController: NSObject, NSWindowDelegate, NSToolbarDelega
 
     @objc private func showSettings() {
         settingsWindowController.show(above: panel)
+    }
+
+    @objc private func toggleWindowPin() {
+        isWindowPinned.toggle()
+        updatePinToolbarItem()
+    }
+
+    private var hasVisibleChildWindow: Bool {
+        panel.attachedSheet?.isVisible == true || panel.childWindows?.contains(where: \.isVisible) == true
+    }
+
+    private func updatePinToolbarItem() {
+        guard let pinToolbarItem else { return }
+        let pinned = isWindowPinned
+        pinToolbarItem.label = pinned ? "Keep window open" : "Close when clicking outside"
+        pinToolbarItem.toolTip = pinToolbarItem.label
+        pinToolbarItem.image = NSImage(
+            systemSymbolName: pinned ? "pin.fill" : "pin.slash",
+            accessibilityDescription: pinToolbarItem.label
+        )
     }
 
     @objc private func workspaceDidActivateApplication(_ notification: Notification) {
