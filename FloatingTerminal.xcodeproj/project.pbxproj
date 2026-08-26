@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		A11C0A000000000000000001 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A11C0A000000000000000002 /* Assets.xcassets */; };
 		08AAE215ACC2B314B4423F7B /* TerminalSessionSnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = 56BA3959D9CE89729EFAF1CB /* TerminalSessionSnapshot.swift */; };
 		0CED07D587DF2CE88A92611A /* UserDefaultsTerminalSessionSnapshotStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 41F3420A69EC7ED56D4EE1CF /* UserDefaultsTerminalSessionSnapshotStore.swift */; };
 		11357DD215F5C2F673D3A11D /* TerminalView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E6CBBF26FD2A688E703DE6 /* TerminalView.swift */; };
@@ -46,6 +47,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		A11C0A000000000000000002 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		052525C7A8F557585BB583C9 /* HotKeySettingsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HotKeySettingsTests.swift; sourceTree = "<group>"; };
 		15A882D39A05A08B77D0B985 /* SwiftTermSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftTermSession.swift; sourceTree = "<group>"; };
 		1A9F6289DBCA779D2C6020E7 /* TerminalSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerminalSession.swift; sourceTree = "<group>"; };
@@ -194,6 +196,7 @@
 		B62AC53D2D75DC35C1EEC9AD /* FloatingTerminal */ = {
 			isa = PBXGroup;
 			children = (
+				A11C0A000000000000000002 /* Assets.xcassets */,
 				32B2030424C9D740DA88BD9B /* Info.plist */,
 				82BEDECA6ABEDD68624C9B7A /* App */,
 				77FE032CFDDEF6630BA67712 /* Core */,
@@ -252,6 +255,17 @@
 		};
 /* End PBXGroup section */
 
+/* Begin PBXResourcesBuildPhase section */
+		A11C0A000000000000000003 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A11C0A000000000000000001 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
 /* Begin PBXNativeTarget section */
 		3191360B693FB6453FCEC91A /* FloatingTerminalTests */ = {
 			isa = PBXNativeTarget;
@@ -277,6 +291,7 @@
 			buildPhases = (
 				C999E015BF8F99D12E469D07 /* Sources */,
 				B4041C5BCF42F6E0BA5D738D /* Frameworks */,
+				A11C0A000000000000000003 /* Resources */,
 			);
 			buildRules = (
 			);
@@ -298,8 +313,6 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = YES;
 				LastUpgradeCheck = 2600;
-				TargetAttributes = {
-				};
 			};
 			buildConfigurationList = 8680728B19E456B4CE5CD590 /* Build configuration list for PBXProject "FloatingTerminal" */;
 			developmentRegion = en;
@@ -396,7 +409,10 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = "";
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
+				DEVELOPMENT_TEAM = XPQN3KYX5Z;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = FloatingTerminal/Info.plist;
 				INFOPLIST_KEY_LSUIElement = YES;
@@ -405,6 +421,7 @@
 					"@executable_path/../Frameworks",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.tsitser.dev.FloatingTerminal;
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = macosx;
 			};
 			name = Release;
@@ -535,7 +552,10 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = "";
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
+				DEVELOPMENT_TEAM = XPQN3KYX5Z;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = FloatingTerminal/Info.plist;
 				INFOPLIST_KEY_LSUIElement = YES;
@@ -544,6 +564,7 @@
 					"@executable_path/../Frameworks",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.tsitser.dev.FloatingTerminal;
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = macosx;
 			};
 			name = Debug;

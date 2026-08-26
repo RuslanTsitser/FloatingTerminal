@@ -2,3 +2,11 @@
 DerivedData/
 *.xcuserstate
 xcuserdata/
+
+# Local Fastlane credentials and generated artifacts
+fastlane/.env
+fastlane/*.p8
+fastlane/report.xml
+build/
+vendor/bundle/
+.bundle/

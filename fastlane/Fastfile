@@ -1,0 +1,141 @@
+require "fileutils"
+require "shellwords"
+require "tempfile"
+
+PROJECT_ROOT = File.expand_path("..", __dir__)
+PROJECT_PATH = File.join(PROJECT_ROOT, "FloatingTerminal.xcodeproj")
+SCHEME = "FloatingTerminal"
+BUILD_DIRECTORY = File.join(PROJECT_ROOT, "build")
+PACKAGE_PATH = File.join(BUILD_DIRECTORY, "FloatingTerminal-macOS.pkg")
+STORE_METADATA_PATH = File.join(PROJECT_ROOT, "fastlane", "metadata")
+STORE_SCREENSHOTS_PATH = File.join(PROJECT_ROOT, "fastlane", "store_screenshots")
+APPLE_TEAM_ID = ENV.fetch("APPLE_TEAM_ID", "XPQN3KYX5Z")
+
+def required_env!(name)
+  value = ENV[name].to_s.strip
+  UI.user_error!("Missing required environment variable: #{name}") if value.empty?
+  value
+end
+
+def app_store_api_key!
+  key_path = File.expand_path(required_env!("APP_STORE_CONNECT_KEY_PATH"), PROJECT_ROOT)
+  UI.user_error!("App Store Connect .p8 key does not exist at the configured path") unless File.file?(key_path)
+
+  app_store_connect_api_key(
+    key_id: required_env!("APP_STORE_CONNECT_KEY_ID"),
+    issuer_id: required_env!("APP_STORE_CONNECT_ISSUER_ID"),
+    key_filepath: key_path,
+    in_house: false
+  )
+end
+
+def store_version!
+  get_version_number(xcodeproj: PROJECT_PATH)
+end
+
+desc "Create a signed macOS Release archive and App Store package"
+lane :build_macos do
+  FileUtils.mkdir_p(BUILD_DIRECTORY)
+
+  build_app(
+    project: PROJECT_PATH,
+    scheme: SCHEME,
+    configuration: "Release",
+    destination: "generic/platform=macOS",
+    export_method: "app-store",
+    export_team_id: APPLE_TEAM_ID,
+    export_options: {
+      method: "app-store",
+      destination: "export",
+      signingStyle: "automatic",
+      teamID: APPLE_TEAM_ID,
+      manageAppVersionAndBuildNumber: false
+    },
+    xcargs: [
+      "-allowProvisioningUpdates",
+      "DEVELOPMENT_TEAM=#{APPLE_TEAM_ID}",
+      "CODE_SIGN_STYLE=Automatic"
+    ].join(" "),
+    output_directory: BUILD_DIRECTORY,
+    output_name: "FloatingTerminal-macOS.pkg",
+    skip_package_ipa: true,
+    skip_package_pkg: false
+  )
+
+  next if File.file?(PACKAGE_PATH)
+
+  archive_pattern = File.expand_path("~/Library/Developer/Xcode/Archives/*/FloatingTerminal*.xcarchive")
+  archive_path = Dir.glob(archive_pattern).max_by { |path| File.mtime(path) }
+  UI.user_error!("No macOS archive found") unless archive_path
+
+  Dir.mktmpdir("floating-terminal-macos-export") do |export_directory|
+    export_options = Tempfile.new(["macos-export-options", ".plist"])
+    export_options.write(<<~PLIST)
+      <?xml version="1.0" encoding="UTF-8"?>
+      <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+      <plist version="1.0"><dict>
+        <key>method</key><string>app-store</string>
+        <key>destination</key><string>export</string>
+        <key>signingStyle</key><string>automatic</string>
+        <key>teamID</key><string>#{APPLE_TEAM_ID}</string>
+        <key>manageAppVersionAndBuildNumber</key><false/>
+      </dict></plist>
+    PLIST
+    export_options.close
+
+    sh(
+      "xcodebuild -exportArchive " \
+      "-archivePath #{Shellwords.escape(archive_path)} " \
+      "-exportPath #{Shellwords.escape(export_directory)} " \
+      "-exportOptionsPlist #{Shellwords.escape(export_options.path)}"
+    )
+
+    package = Dir.glob(File.join(export_directory, "*.pkg")).first
+    UI.user_error!("macOS package was not exported") unless package
+    FileUtils.cp(package, PACKAGE_PATH)
+  ensure
+    export_options&.close!
+  end
+end
+
+desc "Build and upload the macOS package to App Store Connect TestFlight"
+lane :upload_testflight do
+  build_macos
+  UI.user_error!("macOS package was not created") unless File.file?(PACKAGE_PATH)
+
+  upload_to_testflight(
+    api_key: app_store_api_key!,
+    pkg: PACKAGE_PATH,
+    app_platform: "osx",
+    skip_waiting_for_build_processing: true
+  )
+end
+
+desc "Upload only App Store screenshots"
+lane :upload_screenshots do
+  deliver(
+    api_key: app_store_api_key!,
+    app_version: store_version!,
+    screenshots_path: STORE_SCREENSHOTS_PATH,
+    skip_binary_upload: true,
+    skip_metadata: true,
+    submit_for_review: false,
+    run_precheck_before_submit: false,
+    force: true,
+    overwrite_screenshots: ENV["OVERWRITE_SCREENSHOTS"] == "true"
+  )
+end
+
+desc "Upload only App Store metadata"
+lane :upload_metadata do
+  deliver(
+    api_key: app_store_api_key!,
+    app_version: store_version!,
+    metadata_path: STORE_METADATA_PATH,
+    skip_binary_upload: true,
+    skip_screenshots: true,
+    submit_for_review: false,
+    run_precheck_before_submit: false,
+    force: true
+  )
+end

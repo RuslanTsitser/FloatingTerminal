@@ -1,0 +1,4 @@
+app_identifier("com.tsitser.dev.FloatingTerminal")
+
+# App Store Connect credentials are loaded from the ignored fastlane/.env file.
+# Keep private API keys out of version control.
