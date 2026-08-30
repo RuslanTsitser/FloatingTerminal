@@ -58,6 +58,10 @@ def combined_command_output!(*command)
   UI.user_error!("Command failed: #{command.join(' ')}\n#{combined_output}")
 end
 
+def visible_command!(*command)
+  sh(Shellwords.join(command))
+end
+
 def homebrew_version!
   version = capture_command!(
     "/usr/libexec/PlistBuddy",
@@ -199,6 +203,11 @@ end
 
 desc "Build, notarize, publish, and update the Homebrew Cask"
 lane :release_homebrew do
+  ENV["GIT_TERMINAL_PROMPT"] = "0"
+  ENV["GCM_INTERACTIVE"] = "never"
+  ENV["GH_PROMPT_DISABLED"] = "1"
+
+  UI.header("Homebrew release: preflight")
   ensure_bundle_exec
   ensure_git_branch(branch: "main")
   ensure_git_status_clean(show_uncommitted_changes: true, show_diff: true)
@@ -213,8 +222,9 @@ lane :release_homebrew do
   UI.user_error!("DEVELOPER_ID_APPLICATION is not available in the keychain") unless signing_identities.include?(developer_id_application)
   combined_command_output!("gh", "auth", "status", "--hostname", "github.com")
   combined_command_output!("git", "ls-remote", HOMEBREW_TAP_URL)
+  UI.message("Signing identity, GitHub authentication, and Homebrew tap are available")
 
-  capture_command!("git", "fetch", "origin", "main", "--tags")
+  visible_command!("git", "fetch", "origin", "main", "--tags")
   commit = capture_command!("git", "rev-parse", "HEAD")
   origin_commit = capture_command!("git", "rev-parse", "origin/main")
   UI.user_error!("main must be synchronized with origin/main") unless commit == origin_commit
@@ -234,6 +244,7 @@ lane :release_homebrew do
   verify_release_tag!(tag, commit) if tag_exists || remote_tag_exists
 
   if release_exists
+    UI.header("GitHub Release: resume #{tag}")
     details = github_release_details!(tag)
     artifact_name = File.basename(artifact_path)
     matching_assets = details.fetch("assets").select { |asset| asset.fetch("name") == artifact_name }
@@ -258,7 +269,8 @@ lane :release_homebrew do
     FileUtils.rm_rf(staging_directory)
     FileUtils.mkdir_p(staging_directory)
 
-    capture_command!(
+    UI.header("Build: archive universal macOS app")
+    visible_command!(
       "xcodebuild", "archive",
       "-project", PROJECT_PATH,
       "-scheme", SCHEME,
@@ -289,7 +301,8 @@ lane :release_homebrew do
     export_options.close
 
     begin
-      capture_command!(
+      UI.header("Build: export Developer ID app")
+      visible_command!(
         "xcodebuild", "-exportArchive",
         "-archivePath", archive_path,
         "-exportPath", export_directory,
@@ -310,15 +323,15 @@ lane :release_homebrew do
     signature_details = combined_command_output!("codesign", "-d", "--verbose=4", app_path)
     UI.user_error!("Hardened Runtime is not enabled") unless signature_details.match?(/flags=.*runtime/)
 
+    UI.header("Notarization")
     FileUtils.rm_f(notarization_zip_path)
     capture_command!("ditto", "-c", "-k", "--keepParent", app_path, notarization_zip_path)
-    notarization_output = capture_command!(
+    notarization_output = visible_command!(
       "xcrun", "notarytool", "submit", notarization_zip_path,
       "--key", key_path,
       "--key-id", key_id,
       "--issuer", issuer_id,
       "--wait",
-      "--timeout", "30m",
       "--output-format", "json"
     )
     notarization = JSON.parse(notarization_output)
@@ -327,6 +340,7 @@ lane :release_homebrew do
     combined_command_output!("xcrun", "stapler", "staple", app_path)
     verify_distribution_app!(app_path)
 
+    UI.header("Package and verify release artifact")
     FileUtils.mkdir_p(BUILD_DIRECTORY)
     FileUtils.rm_f(artifact_path)
     capture_command!("ditto", "-c", "-k", "--keepParent", app_path, artifact_path)
@@ -344,7 +358,8 @@ lane :release_homebrew do
     end
     capture_command!("git", "push", "origin", "refs/tags/#{tag}") unless remote_tag_exists
 
-    capture_command!(
+    UI.header("GitHub Release: publish #{tag}")
+    visible_command!(
       "gh", "release", "create", tag, artifact_path,
       "--repo", "RuslanTsitser/FloatingTerminal",
       "--verify-tag",
@@ -359,6 +374,7 @@ lane :release_homebrew do
     )
   end
 
+  UI.header("Homebrew tap: publish Cask")
   update_homebrew_tap!(version: version, sha256: sha256)
   UI.success("Released #{tag}. Artifacts are available in #{BUILD_DIRECTORY}")
 end

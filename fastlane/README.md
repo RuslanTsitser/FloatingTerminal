@@ -13,6 +13,14 @@ For _fastlane_ installation instructions, see [Installing _fastlane_](https://do
 
 # Available Actions
 
+### release_homebrew
+
+```sh
+[bundle exec] fastlane release_homebrew
+```
+
+Build, notarize, publish, and update the Homebrew Cask
+
 ### build_macos
 
 ```sh
