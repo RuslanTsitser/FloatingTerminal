@@ -1,4 +1,7 @@
 require "fileutils"
+require "digest"
+require "json"
+require "open3"
 require "shellwords"
 require "tempfile"
 
@@ -9,6 +12,9 @@ BUILD_DIRECTORY = File.join(PROJECT_ROOT, "build")
 PACKAGE_PATH = File.join(BUILD_DIRECTORY, "FloatingTerminal-macOS.pkg")
 STORE_METADATA_PATH = File.join(PROJECT_ROOT, "fastlane", "metadata")
 STORE_SCREENSHOTS_PATH = File.join(PROJECT_ROOT, "fastlane", "store_screenshots")
+INFO_PLIST_PATH = File.join(PROJECT_ROOT, "FloatingTerminal", "Info.plist")
+HOMEBREW_TAP_URL = "https://github.com/RuslanTsitser/homebrew-tap.git"
+HOMEBREW_CASK_PATH = File.join("Casks", "floating-terminal.rb")
 APPLE_TEAM_ID = ENV.fetch("APPLE_TEAM_ID", "XPQN3KYX5Z")
 
 def required_env!(name)
@@ -31,6 +37,330 @@ end
 
 def store_version!
   get_version_number(xcodeproj: PROJECT_PATH)
+end
+
+def capture_command!(*command)
+  output, error, status = Open3.capture3(*command, chdir: PROJECT_ROOT)
+  return output.strip if status.success?
+
+  UI.user_error!("Command failed: #{command.join(' ')}\n#{error.strip}")
+end
+
+def command_succeeds?(*command)
+  system(*command, chdir: PROJECT_ROOT, out: File::NULL, err: File::NULL)
+end
+
+def combined_command_output!(*command)
+  output, error, status = Open3.capture3(*command, chdir: PROJECT_ROOT)
+  combined_output = [output, error].reject(&:empty?).join("\n").strip
+  return combined_output if status.success?
+
+  UI.user_error!("Command failed: #{command.join(' ')}\n#{combined_output}")
+end
+
+def homebrew_version!
+  version = capture_command!(
+    "/usr/libexec/PlistBuddy",
+    "-c",
+    "Print :CFBundleShortVersionString",
+    INFO_PLIST_PATH
+  )
+  UI.user_error!("CFBundleShortVersionString is empty") if version.empty?
+  UI.user_error!("Invalid release version: #{version}") unless version.match?(/\A\d+\.\d+\.\d+(?:[-.][0-9A-Za-z.-]+)?\z/)
+
+  version
+end
+
+def homebrew_cask(version:, sha256:)
+  <<~CASK
+    cask "floating-terminal" do
+      version "#{version}"
+      sha256 "#{sha256}"
+
+      url "https://github.com/RuslanTsitser/FloatingTerminal/releases/download/v#{version}/FloatingTerminal-#{version}.zip"
+      name "FloatingTerminal"
+      desc "Drop-down terminal activated by a global hotkey"
+      homepage "https://github.com/RuslanTsitser/FloatingTerminal"
+
+      depends_on macos: :sonoma
+
+      app "FloatingTerminal.app"
+    end
+  CASK
+end
+
+def verify_release_tag!(tag, commit)
+  tagged_commit = capture_command!("git", "rev-list", "-n", "1", tag)
+  UI.user_error!("Tag #{tag} does not point to the current commit") unless tagged_commit == commit
+end
+
+def verify_distribution_app!(app_path)
+  executable_path = File.join(app_path, "Contents", "MacOS", "FloatingTerminal")
+  UI.user_error!("FloatingTerminal executable was not exported") unless File.file?(executable_path)
+
+  architectures = capture_command!("lipo", "-archs", executable_path).split.sort
+  expected_architectures = %w[arm64 x86_64].sort
+  UI.user_error!("Expected #{expected_architectures.join(' + ')}, got #{architectures.join(' + ')}") unless architectures == expected_architectures
+
+  combined_command_output!("codesign", "--verify", "--deep", "--strict", "--verbose=2", app_path)
+  signature_details = combined_command_output!("codesign", "-d", "--verbose=4", app_path)
+  UI.user_error!("Hardened Runtime is not enabled") unless signature_details.match?(/flags=.*runtime/)
+  combined_command_output!("xcrun", "stapler", "validate", app_path)
+  combined_command_output!("spctl", "--assess", "--type", "execute", "--verbose=4", app_path)
+end
+
+def verify_distribution_zip!(zip_path)
+  Dir.mktmpdir("floating-terminal-verify") do |directory|
+    capture_command!("ditto", "-x", "-k", zip_path, directory)
+    children = Dir.children(directory).sort
+    UI.user_error!("Release ZIP must contain only FloatingTerminal.app") unless children == ["FloatingTerminal.app"]
+
+    verify_distribution_app!(File.join(directory, "FloatingTerminal.app"))
+  end
+end
+
+def github_release_details!(tag)
+  output = capture_command!(
+    "gh", "release", "view", tag,
+    "--repo", "RuslanTsitser/FloatingTerminal",
+    "--json", "tagName,name,isDraft,assets"
+  )
+  JSON.parse(output)
+end
+
+def verify_github_release!(tag:, title:, artifact_path:, sha256:)
+  details = github_release_details!(tag)
+  UI.user_error!("GitHub Release tag does not match #{tag}") unless details.fetch("tagName") == tag
+  UI.user_error!("GitHub Release title does not match #{title}") unless details.fetch("name") == title
+  UI.user_error!("GitHub Release is still a draft") if details.fetch("isDraft")
+
+  artifact_name = File.basename(artifact_path)
+  matching_assets = details.fetch("assets").select { |asset| asset.fetch("name") == artifact_name }
+  UI.user_error!("GitHub Release must contain exactly one #{artifact_name} asset") unless matching_assets.length == 1
+
+  Dir.mktmpdir("floating-terminal-release") do |directory|
+    capture_command!(
+      "gh", "release", "download", tag,
+      "--repo", "RuslanTsitser/FloatingTerminal",
+      "--pattern", artifact_name,
+      "--dir", directory
+    )
+    downloaded_path = File.join(directory, artifact_name)
+    downloaded_sha256 = Digest::SHA256.file(downloaded_path).hexdigest
+    UI.user_error!("Published asset SHA-256 does not match the local artifact") unless downloaded_sha256 == sha256
+  end
+end
+
+def download_github_release_artifact!(tag:, artifact_path:)
+  FileUtils.mkdir_p(File.dirname(artifact_path))
+  Dir.mktmpdir("floating-terminal-resume") do |directory|
+    capture_command!(
+      "gh", "release", "download", tag,
+      "--repo", "RuslanTsitser/FloatingTerminal",
+      "--pattern", File.basename(artifact_path),
+      "--dir", directory
+    )
+    downloaded_path = File.join(directory, File.basename(artifact_path))
+    UI.user_error!("GitHub Release asset was not downloaded") unless File.file?(downloaded_path)
+    FileUtils.cp(downloaded_path, artifact_path)
+  end
+end
+
+def update_homebrew_tap!(version:, sha256:)
+  Dir.mktmpdir("floating-terminal-homebrew-tap") do |tap_directory|
+    sh("git clone #{Shellwords.escape(HOMEBREW_TAP_URL)} #{Shellwords.escape(tap_directory)}")
+
+    unless command_succeeds?("git", "-C", tap_directory, "rev-parse", "--verify", "HEAD")
+      sh("git -C #{Shellwords.escape(tap_directory)} checkout --orphan main")
+    end
+
+    cask_path = File.join(tap_directory, HOMEBREW_CASK_PATH)
+    FileUtils.mkdir_p(File.dirname(cask_path))
+    expected_cask = homebrew_cask(version: version, sha256: sha256)
+    if File.file?(cask_path)
+      current_cask = File.read(cask_path)
+      same_version = current_cask.match?(/^\s*version "#{Regexp.escape(version)}"$/)
+      UI.user_error!("Homebrew Cask already has version #{version} with different contents") if same_version && current_cask != expected_cask
+    end
+    File.write(cask_path, expected_cask)
+
+    sh("brew style #{Shellwords.escape(cask_path)}")
+    sh("git -C #{Shellwords.escape(tap_directory)} add #{Shellwords.escape(HOMEBREW_CASK_PATH)}")
+
+    if command_succeeds?("git", "-C", tap_directory, "diff", "--cached", "--quiet")
+      UI.message("Homebrew Cask already points to version #{version}")
+      next
+    end
+
+    sh("git -C #{Shellwords.escape(tap_directory)} commit -m #{Shellwords.escape("Update FloatingTerminal to #{version}")}")
+    sh("git -C #{Shellwords.escape(tap_directory)} push origin HEAD:main")
+  end
+end
+
+desc "Build, notarize, publish, and update the Homebrew Cask"
+lane :release_homebrew do
+  ensure_bundle_exec
+  ensure_git_branch(branch: "main")
+  ensure_git_status_clean(show_uncommitted_changes: true, show_diff: true)
+
+  developer_id_application = required_env!("DEVELOPER_ID_APPLICATION")
+  key_id = required_env!("APP_STORE_CONNECT_KEY_ID")
+  issuer_id = required_env!("APP_STORE_CONNECT_ISSUER_ID")
+  key_path = File.expand_path(required_env!("APP_STORE_CONNECT_KEY_PATH"), PROJECT_ROOT)
+  UI.user_error!("App Store Connect .p8 key does not exist at the configured path") unless File.file?(key_path)
+
+  signing_identities = combined_command_output!("security", "find-identity", "-v", "-p", "codesigning")
+  UI.user_error!("DEVELOPER_ID_APPLICATION is not available in the keychain") unless signing_identities.include?(developer_id_application)
+  combined_command_output!("gh", "auth", "status", "--hostname", "github.com")
+  combined_command_output!("git", "ls-remote", HOMEBREW_TAP_URL)
+
+  capture_command!("git", "fetch", "origin", "main", "--tags")
+  commit = capture_command!("git", "rev-parse", "HEAD")
+  origin_commit = capture_command!("git", "rev-parse", "origin/main")
+  UI.user_error!("main must be synchronized with origin/main") unless commit == origin_commit
+
+  version = homebrew_version!
+  tag = "v#{version}"
+  release_title = "FloatingTerminal #{version}"
+  artifact_path = File.join(BUILD_DIRECTORY, "FloatingTerminal-#{version}.zip")
+  tag_exists = command_succeeds?("git", "rev-parse", "--verify", "refs/tags/#{tag}")
+  remote_tag_exists = command_succeeds?("git", "ls-remote", "--exit-code", "--tags", "origin", "refs/tags/#{tag}")
+  release_exists = command_succeeds?(
+    "gh", "release", "view", tag,
+    "--repo", "RuslanTsitser/FloatingTerminal"
+  )
+
+  UI.user_error!("GitHub Release exists without the expected Git tag") if release_exists && !remote_tag_exists
+  verify_release_tag!(tag, commit) if tag_exists || remote_tag_exists
+
+  if release_exists
+    details = github_release_details!(tag)
+    artifact_name = File.basename(artifact_path)
+    matching_assets = details.fetch("assets").select { |asset| asset.fetch("name") == artifact_name }
+    UI.user_error!("GitHub Release must contain exactly one #{artifact_name} asset") unless matching_assets.length == 1
+    download_github_release_artifact!(tag: tag, artifact_path: artifact_path) unless File.file?(artifact_path)
+
+    verify_distribution_zip!(artifact_path)
+    sha256 = Digest::SHA256.file(artifact_path).hexdigest
+    verify_github_release!(
+      tag: tag,
+      title: release_title,
+      artifact_path: artifact_path,
+      sha256: sha256
+    )
+    UI.message("GitHub Release #{tag} is already complete; continuing with the Homebrew tap")
+  else
+    staging_directory = File.join(BUILD_DIRECTORY, "homebrew", version)
+    archive_path = File.join(staging_directory, "FloatingTerminal.xcarchive")
+    export_directory = File.join(staging_directory, "export")
+    notarization_zip_path = File.join(staging_directory, "FloatingTerminal-notarization.zip")
+
+    FileUtils.rm_rf(staging_directory)
+    FileUtils.mkdir_p(staging_directory)
+
+    capture_command!(
+      "xcodebuild", "archive",
+      "-project", PROJECT_PATH,
+      "-scheme", SCHEME,
+      "-configuration", "Release",
+      "-destination", "generic/platform=macOS",
+      "-archivePath", archive_path,
+      "DEVELOPMENT_TEAM=#{APPLE_TEAM_ID}",
+      "CODE_SIGN_STYLE=Manual",
+      "CODE_SIGN_IDENTITY=#{developer_id_application}",
+      "ENABLE_HARDENED_RUNTIME=YES",
+      "OTHER_CODE_SIGN_FLAGS=--timestamp",
+      "ONLY_ACTIVE_ARCH=NO",
+      "ARCHS=arm64 x86_64"
+    )
+
+    export_options = Tempfile.new(["developer-id-export-options", ".plist"])
+    export_options.write(<<~PLIST)
+      <?xml version="1.0" encoding="UTF-8"?>
+      <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+      <plist version="1.0"><dict>
+        <key>method</key><string>developer-id</string>
+        <key>destination</key><string>export</string>
+        <key>signingStyle</key><string>manual</string>
+        <key>signingCertificate</key><string>#{developer_id_application}</string>
+        <key>teamID</key><string>#{APPLE_TEAM_ID}</string>
+      </dict></plist>
+    PLIST
+    export_options.close
+
+    begin
+      capture_command!(
+        "xcodebuild", "-exportArchive",
+        "-archivePath", archive_path,
+        "-exportPath", export_directory,
+        "-exportOptionsPlist", export_options.path
+      )
+    ensure
+      export_options.close!
+    end
+
+    app_path = File.join(export_directory, "FloatingTerminal.app")
+    UI.user_error!("Developer ID export did not create FloatingTerminal.app") unless File.directory?(app_path)
+
+    executable_path = File.join(app_path, "Contents", "MacOS", "FloatingTerminal")
+    architectures = capture_command!("lipo", "-archs", executable_path).split.sort
+    expected_architectures = %w[arm64 x86_64].sort
+    UI.user_error!("Expected #{expected_architectures.join(' + ')}, got #{architectures.join(' + ')}") unless architectures == expected_architectures
+    combined_command_output!("codesign", "--verify", "--deep", "--strict", "--verbose=2", app_path)
+    signature_details = combined_command_output!("codesign", "-d", "--verbose=4", app_path)
+    UI.user_error!("Hardened Runtime is not enabled") unless signature_details.match?(/flags=.*runtime/)
+
+    FileUtils.rm_f(notarization_zip_path)
+    capture_command!("ditto", "-c", "-k", "--keepParent", app_path, notarization_zip_path)
+    notarization_output = capture_command!(
+      "xcrun", "notarytool", "submit", notarization_zip_path,
+      "--key", key_path,
+      "--key-id", key_id,
+      "--issuer", issuer_id,
+      "--wait",
+      "--timeout", "30m",
+      "--output-format", "json"
+    )
+    notarization = JSON.parse(notarization_output)
+    UI.user_error!("Notarization was not accepted: #{notarization.fetch('status', 'unknown')}") unless notarization.fetch("status") == "Accepted"
+
+    combined_command_output!("xcrun", "stapler", "staple", app_path)
+    verify_distribution_app!(app_path)
+
+    FileUtils.mkdir_p(BUILD_DIRECTORY)
+    FileUtils.rm_f(artifact_path)
+    capture_command!("ditto", "-c", "-k", "--keepParent", app_path, artifact_path)
+    verify_distribution_zip!(artifact_path)
+    sha256 = Digest::SHA256.file(artifact_path).hexdigest
+
+    ensure_git_status_clean(show_uncommitted_changes: true, show_diff: true)
+    current_commit = capture_command!("git", "rev-parse", "HEAD")
+    current_origin_commit = capture_command!("git", "rev-parse", "origin/main")
+    UI.user_error!("Repository changed while the release was building") unless current_commit == commit && current_origin_commit == commit
+
+    unless tag_exists
+      capture_command!("git", "tag", "-a", tag, "-m", release_title, commit)
+      tag_exists = true
+    end
+    capture_command!("git", "push", "origin", "refs/tags/#{tag}") unless remote_tag_exists
+
+    capture_command!(
+      "gh", "release", "create", tag, artifact_path,
+      "--repo", "RuslanTsitser/FloatingTerminal",
+      "--verify-tag",
+      "--title", release_title,
+      "--generate-notes"
+    )
+    verify_github_release!(
+      tag: tag,
+      title: release_title,
+      artifact_path: artifact_path,
+      sha256: sha256
+    )
+  end
+
+  update_homebrew_tap!(version: version, sha256: sha256)
+  UI.success("Released #{tag}. Artifacts are available in #{BUILD_DIRECTORY}")
 end
 
 desc "Create a signed macOS Release archive and App Store package"
