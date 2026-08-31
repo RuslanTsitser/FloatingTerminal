@@ -5,9 +5,17 @@ private final class FloatingTerminalPanel: NSPanel {
     var increaseFontSize: (() -> Void)?
     var decreaseFontSize: (() -> Void)?
     var resetFontSize: (() -> Void)?
+    var handleOptionKey: ((NSEvent) -> Bool)?
 
     override var canBecomeKey: Bool { true }
     override var canBecomeMain: Bool { false }
+
+    override func sendEvent(_ event: NSEvent) {
+        if event.type == .keyDown, handleOptionKey?(event) == true {
+            return
+        }
+        super.sendEvent(event)
+    }
 
     override func performKeyEquivalent(with event: NSEvent) -> Bool {
         let modifiers = event.modifierFlags.intersection(.deviceIndependentFlagsMask)
@@ -106,6 +114,27 @@ final class TerminalPanelController: NSObject, NSWindowDelegate, NSToolbarDelega
     func decreaseFontSize() { workspaceState.selectedSession?.decreaseFontSize() }
     func resetFontSize() { workspaceState.selectedSession?.resetFontSize() }
 
+    private func handleOptionKey(_ event: NSEvent) -> Bool {
+        let modifiers = event.modifierFlags.intersection(.deviceIndependentFlagsMask)
+        guard modifiers == .option,
+              let session = workspaceState.selectedSession,
+              let terminalView = workspaceState.selectedTerminalView as? RecordingLocalProcessTerminalView,
+              terminalView.getTerminal().keyboardEnhancementFlags.isEmpty else {
+            return false
+        }
+
+        let input: [UInt8]
+        switch event.keyCode {
+        case 123: input = [0x1b, 0x62] // Option-Left: previous word (Meta-b)
+        case 124: input = [0x1b, 0x66] // Option-Right: next word (Meta-f)
+        case 51: input = [0x1b, 0x7f]  // Option-Backspace: delete previous word
+        case 117: input = [0x1b, 0x64] // Option-Delete: delete next word (Meta-d)
+        default: return false
+        }
+        session.send(Data(input))
+        return true
+    }
+
     func createTerminal(in workingDirectory: String? = nil) {
         workspaceState.restore()
         workspaceState.createTerminal(in: workingDirectory)
@@ -146,6 +175,7 @@ final class TerminalPanelController: NSObject, NSWindowDelegate, NSToolbarDelega
         panel.increaseFontSize = { [weak self] in self?.increaseFontSize() }
         panel.decreaseFontSize = { [weak self] in self?.decreaseFontSize() }
         panel.resetFontSize = { [weak self] in self?.resetFontSize() }
+        panel.handleOptionKey = { [weak self] event in self?.handleOptionKey(event) ?? false }
         panel.delegate = self
         panel.toolbar = makeToolbar()
         panel.toolbarStyle = .unifiedCompact

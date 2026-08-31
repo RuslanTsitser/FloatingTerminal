@@ -7,7 +7,10 @@ final class SwiftTermSession: NSObject, TerminalSession {
     private static let fontSizeRange = 8.0...32.0
     private static let fontSizeKey = "terminal.fontSize"
 
-    let terminalView = RecordingLocalProcessTerminalView(frame: .zero)
+    let terminalView = RecordingLocalProcessTerminalView(
+        frame: .zero,
+        options: TerminalOptions(cursorStyle: .steadyBlock)
+    )
     private(set) var isRunning = false
     private let defaults: UserDefaults
     private(set) var fontSize: Double
@@ -31,6 +34,7 @@ final class SwiftTermSession: NSObject, TerminalSession {
             self?.recordInput(input)
         }
         applyFont()
+        terminalView.optionAsMetaKey = true
         terminalView.nativeBackgroundColor = .black
         terminalView.nativeForegroundColor = .white
     }
@@ -81,7 +85,7 @@ final class SwiftTermSession: NSObject, TerminalSession {
 
     func restoreTranscript(_ savedTranscript: String) {
         guard !savedTranscript.isEmpty else { return }
-        transcript = String(savedTranscript.suffix(transcriptLimit))
+        transcript = String(Self.plainText(from: savedTranscript).suffix(transcriptLimit))
         terminalView.feed(text: transcript)
     }
 
@@ -104,9 +108,65 @@ final class SwiftTermSession: NSObject, TerminalSession {
     }
 
     private func recordOutput(_ output: Data) {
-        guard let text = String(data: output, encoding: .utf8) else { return }
-        transcript = String((transcript + text).suffix(transcriptLimit))
+        guard !output.isEmpty else { return }
+        let snapshot = terminalView.getTerminal().getBufferAsData(kind: .normal)
+        guard let text = String(data: snapshot, encoding: .utf8) else { return }
+        transcript = String(text.suffix(transcriptLimit))
         onTranscriptChanged?(transcript)
+    }
+
+    private static func plainText(from text: String) -> String {
+        enum State {
+            case text
+            case escape
+            case controlSequence
+            case controlString
+            case controlStringEscape
+        }
+
+        var result = String.UnicodeScalarView()
+        var state = State.text
+
+        for scalar in text.unicodeScalars {
+            switch state {
+            case .text:
+                switch scalar.value {
+                case 0x1b:
+                    state = .escape
+                case 0x0a, 0x0d, 0x09:
+                    result.append(scalar)
+                case 0x20...0x7e, 0xa0...0x10ffff:
+                    result.append(scalar)
+                default:
+                    break
+                }
+            case .escape:
+                switch scalar.value {
+                case 0x5b: // CSI
+                    state = .controlSequence
+                case 0x5d, 0x50, 0x5e, 0x5f: // OSC, DCS, PM, APC
+                    state = .controlString
+                case 0x20...0x2f:
+                    break
+                default:
+                    state = .text
+                }
+            case .controlSequence:
+                if scalar.value >= 0x40 && scalar.value <= 0x7e {
+                    state = .text
+                }
+            case .controlString:
+                if scalar.value == 0x07 {
+                    state = .text
+                } else if scalar.value == 0x1b {
+                    state = .controlStringEscape
+                }
+            case .controlStringEscape:
+                state = scalar.value == 0x5c ? .text : .controlString
+            }
+        }
+
+        return String(result)
     }
 
     private func recordInput(_ input: Data) {
