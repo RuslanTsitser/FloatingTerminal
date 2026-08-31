@@ -6,13 +6,16 @@ private final class FloatingTerminalPanel: NSPanel {
     var decreaseFontSize: (() -> Void)?
     var resetFontSize: (() -> Void)?
     var handleOptionKey: ((NSEvent) -> Bool)?
+    var handleCommandKey: ((NSEvent) -> Bool)?
 
     override var canBecomeKey: Bool { true }
     override var canBecomeMain: Bool { false }
 
     override func sendEvent(_ event: NSEvent) {
-        if event.type == .keyDown, handleOptionKey?(event) == true {
-            return
+        if event.type == .keyDown {
+            if handleOptionKey?(event) == true || handleCommandKey?(event) == true {
+                return
+            }
         }
         super.sendEvent(event)
     }
@@ -135,6 +138,54 @@ final class TerminalPanelController: NSObject, NSWindowDelegate, NSToolbarDelega
         return true
     }
 
+    private func handleCommandKey(_ event: NSEvent) -> Bool {
+        let modifiers = event.modifierFlags.intersection(.deviceIndependentFlagsMask)
+        guard modifiers == .command,
+              let session = workspaceState.selectedSession,
+              let terminalView = workspaceState.selectedTerminalView as? RecordingLocalProcessTerminalView else {
+            return false
+        }
+
+        switch event.keyCode {
+        case 123 where terminalView.getTerminal().keyboardEnhancementFlags.isEmpty:
+            session.send(Data([0x01])) // Command-Left: beginning of line (Control-A)
+        case 124 where terminalView.getTerminal().keyboardEnhancementFlags.isEmpty:
+            session.send(Data([0x05])) // Command-Right: end of line (Control-E)
+        case 51 where terminalView.getTerminal().keyboardEnhancementFlags.isEmpty:
+            session.send(Data([0x15])) // Command-Backspace: delete to beginning (Control-U)
+        case 117 where terminalView.getTerminal().keyboardEnhancementFlags.isEmpty:
+            session.send(Data([0x0b])) // Command-Delete: delete to end (Control-K)
+        case 126:
+            terminalView.scroll(toPosition: 0)
+        case 125:
+            terminalView.scroll(toPosition: 1)
+        default:
+            guard let character = event.charactersIgnoringModifiers?.lowercased() else { return false }
+            switch character {
+            case "c":
+                let item = NSMenuItem(title: "Copy", action: #selector(terminalView.copy(_:)), keyEquivalent: "")
+                guard terminalView.validateUserInterfaceItem(item) else { return true }
+                terminalView.copy(self)
+            case "v":
+                terminalView.paste(self)
+            case "a":
+                terminalView.selectAll(self)
+            case "f":
+                let item = NSMenuItem(title: "Find", action: #selector(terminalView.performFindPanelAction(_:)), keyEquivalent: "")
+                item.tag = Int(NSFindPanelAction.showFindPanel.rawValue)
+                terminalView.performFindPanelAction(item)
+            case "k":
+                session.send(Data([0x0c])) // Redraw the prompt on a clean screen.
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
+                    terminalView.getTerminal().clearScrollback()
+                }
+            default:
+                return false
+            }
+        }
+        return true
+    }
+
     func createTerminal(in workingDirectory: String? = nil) {
         workspaceState.restore()
         workspaceState.createTerminal(in: workingDirectory)
@@ -176,6 +227,7 @@ final class TerminalPanelController: NSObject, NSWindowDelegate, NSToolbarDelega
         panel.decreaseFontSize = { [weak self] in self?.decreaseFontSize() }
         panel.resetFontSize = { [weak self] in self?.resetFontSize() }
         panel.handleOptionKey = { [weak self] event in self?.handleOptionKey(event) ?? false }
+        panel.handleCommandKey = { [weak self] event in self?.handleCommandKey(event) ?? false }
         panel.delegate = self
         panel.toolbar = makeToolbar()
         panel.toolbarStyle = .unifiedCompact
