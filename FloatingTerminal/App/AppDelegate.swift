@@ -40,6 +40,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             let settingsItem = NSMenuItem(title: "Settings…", action: #selector(showSettings), keyEquivalent: "")
             settingsItem.target = self
             menu.addItem(settingsItem)
+            menu.addItem(.separator())
+            let quitItem = NSMenuItem(title: "Quit", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "")
+            quitItem.target = NSApp
+            menu.addItem(quitItem)
             menu.popUp(positioning: nil, at: NSPoint(x: 0, y: button.bounds.minY), in: button)
         } else {
             panelController.toggle(anchorButton: button)
