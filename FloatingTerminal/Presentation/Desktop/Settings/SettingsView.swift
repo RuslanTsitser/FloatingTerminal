@@ -17,13 +17,7 @@ struct SettingsView: View {
                     .foregroundStyle(.secondary)
                 Button("Clear shortcut") { state.clearShortcut() }
             }
-            Section("Working directory") {
-                Text(state.workingDirectoryDescription)
-                    .lineLimit(1)
-                    .truncationMode(.middle)
-                    .foregroundStyle(.secondary)
-                Button("Choose folder…") { state.chooseWorkingDirectory() }
-            }
+
         }
         .padding()
         .frame(width: 360)

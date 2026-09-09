@@ -36,7 +36,6 @@ private final class FloatingTerminalPanel: NSPanel {
 private extension NSToolbarItem.Identifier {
     static let floatingTerminalSidebar = NSToolbarItem.Identifier("FloatingTerminal.sidebar")
     static let floatingTerminalNew = NSToolbarItem.Identifier("FloatingTerminal.new")
-    static let floatingTerminalSettings = NSToolbarItem.Identifier("FloatingTerminal.settings")
     static let floatingTerminalPin = NSToolbarItem.Identifier("FloatingTerminal.pin")
 }
 
@@ -49,9 +48,6 @@ private enum PanelPersistence {
 final class TerminalPanelController: NSObject, NSWindowDelegate, NSToolbarDelegate {
     private let workspaceState = TerminalWorkspaceViewState()
     private lazy var panel: FloatingTerminalPanel = makePanel()
-    private lazy var settingsWindowController = SettingsWindowController(selectedTerminalSession: { [weak self] in
-        self?.workspaceState.selectedSession
-    })
     private var hasPositionedPanel = false
     private var shouldRestoreFocusUntil: Date?
     private var pinToolbarItem: NSToolbarItem?
@@ -104,7 +100,6 @@ final class TerminalPanelController: NSObject, NSWindowDelegate, NSToolbarDelega
     }
 
     func hide() {
-        settingsWindowController.hide()
         panel.orderOut(nil)
         shouldRestoreFocusUntil = nil
     }
@@ -253,11 +248,11 @@ final class TerminalPanelController: NSObject, NSWindowDelegate, NSToolbarDelega
     }
 
     func toolbarAllowedItemIdentifiers(_ toolbar: NSToolbar) -> [NSToolbarItem.Identifier] {
-        [.floatingTerminalSidebar, .flexibleSpace, .floatingTerminalNew, .floatingTerminalPin, .floatingTerminalSettings]
+        [.floatingTerminalSidebar, .flexibleSpace, .floatingTerminalNew, .floatingTerminalPin]
     }
 
     func toolbarDefaultItemIdentifiers(_ toolbar: NSToolbar) -> [NSToolbarItem.Identifier] {
-        [.floatingTerminalSidebar, .flexibleSpace, .floatingTerminalNew, .floatingTerminalPin, .floatingTerminalSettings]
+        [.floatingTerminalSidebar, .flexibleSpace, .floatingTerminalNew, .floatingTerminalPin]
     }
 
     func toolbar(
@@ -278,11 +273,6 @@ final class TerminalPanelController: NSObject, NSWindowDelegate, NSToolbarDelega
             item.toolTip = "New terminal"
             item.image = NSImage(systemSymbolName: "plus", accessibilityDescription: "New terminal")
             item.action = #selector(createNewTerminal)
-        case .floatingTerminalSettings:
-            item.label = "Settings"
-            item.toolTip = "Settings"
-            item.image = NSImage(systemSymbolName: "gearshape", accessibilityDescription: "Settings")
-            item.action = #selector(showSettings)
         case .floatingTerminalPin:
             pinToolbarItem = item
             updatePinToolbarItem()
@@ -308,10 +298,6 @@ final class TerminalPanelController: NSObject, NSWindowDelegate, NSToolbarDelega
             guard response == .OK, let directory = picker.url else { return }
             self?.createTerminal(in: directory.path)
         }
-    }
-
-    @objc private func showSettings() {
-        settingsWindowController.show(above: panel)
     }
 
     @objc private func toggleWindowPin() {
