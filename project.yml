@@ -24,7 +24,7 @@ targets:
         PRODUCT_BUNDLE_IDENTIFIER: com.tsitser.dev.FloatingTerminal
         GENERATE_INFOPLIST_FILE: NO
         INFOPLIST_FILE: FloatingTerminal/Info.plist
-        INFOPLIST_KEY_LSUIElement: YES
+        INFOPLIST_KEY_LSUIElement: NO
         CODE_SIGN_ENTITLEMENTS: ""
     dependencies:
       - package: SwiftTerm

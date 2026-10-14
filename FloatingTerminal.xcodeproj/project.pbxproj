@@ -415,7 +415,7 @@
 				DEVELOPMENT_TEAM = XPQN3KYX5Z;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = FloatingTerminal/Info.plist;
-				INFOPLIST_KEY_LSUIElement = YES;
+				INFOPLIST_KEY_LSUIElement = NO;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
@@ -558,7 +558,7 @@
 				DEVELOPMENT_TEAM = XPQN3KYX5Z;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = FloatingTerminal/Info.plist;
-				INFOPLIST_KEY_LSUIElement = YES;
+				INFOPLIST_KEY_LSUIElement = NO;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
