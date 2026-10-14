@@ -33,8 +33,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
-        panelController.toggle(restorePreviousApplication: true)
-        return false
+        panelController.show()
+        return true
     }
 
     @objc private func handleStatusItemClick(_ sender: Any?) {

@@ -50,7 +50,6 @@ final class TerminalPanelController: NSObject, NSWindowDelegate, NSToolbarDelega
     private lazy var panel: FloatingTerminalPanel = makePanel()
     private var hasPositionedPanel = false
     private var shouldRestoreFocusUntil: Date?
-    private var previousExternalApplication: NSRunningApplication?
     private var pinToolbarItem: NSToolbarItem?
 
     private var isWindowPinned: Bool {
@@ -67,10 +66,6 @@ final class TerminalPanelController: NSObject, NSWindowDelegate, NSToolbarDelega
 
     override init() {
         super.init()
-        if let application = NSWorkspace.shared.frontmostApplication,
-           application.processIdentifier != ProcessInfo.processInfo.processIdentifier {
-            previousExternalApplication = application
-        }
         workspaceState.onCommandSubmitted = { [weak self] command in
             guard command.trimmingCharacters(in: .whitespaces).hasPrefix("open") else { return }
             self?.shouldRestoreFocusUntil = Date().addingTimeInterval(5)
@@ -87,15 +82,8 @@ final class TerminalPanelController: NSObject, NSWindowDelegate, NSToolbarDelega
         NSWorkspace.shared.notificationCenter.removeObserver(self)
     }
 
-    func toggle(anchorButton: NSStatusBarButton? = nil, restorePreviousApplication: Bool = false) {
-        if panel.isVisible {
-            hide()
-            if restorePreviousApplication, let application = previousExternalApplication, !application.isTerminated {
-                application.activate(options: [])
-            }
-        } else {
-            show(anchorButton: anchorButton)
-        }
+    func toggle(anchorButton: NSStatusBarButton? = nil) {
+        panel.isVisible ? hide() : show(anchorButton: anchorButton)
     }
 
     func show(anchorButton: NSStatusBarButton? = nil) {
@@ -333,13 +321,11 @@ final class TerminalPanelController: NSObject, NSWindowDelegate, NSToolbarDelega
     }
 
     @objc private func workspaceDidActivateApplication(_ notification: Notification) {
-        guard let application = notification.userInfo?[NSWorkspace.applicationUserInfoKey] as? NSRunningApplication,
-              application.processIdentifier != ProcessInfo.processInfo.processIdentifier else { return }
-        previousExternalApplication = application
-
         guard panel.isVisible,
               let deadline = shouldRestoreFocusUntil,
-              deadline > Date()
+              deadline > Date(),
+              let application = notification.userInfo?[NSWorkspace.applicationUserInfoKey] as? NSRunningApplication,
+              application.processIdentifier != ProcessInfo.processInfo.processIdentifier
         else { return }
         shouldRestoreFocusUntil = nil
         DispatchQueue.main.async { [weak self] in
