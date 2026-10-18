@@ -85,8 +85,9 @@ final class SwiftTermSession: NSObject, TerminalSession {
 
     func restoreTranscript(_ savedTranscript: String) {
         guard !savedTranscript.isEmpty else { return }
-        transcript = String(Self.plainText(from: savedTranscript).suffix(transcriptLimit))
-        terminalView.feed(text: transcript)
+        transcript = String(Self.normalizedTranscript(Self.plainText(from: savedTranscript)).suffix(transcriptLimit))
+        // A terminal LF moves down without returning to the first column.
+        terminalView.feed(text: transcript.replacingOccurrences(of: "\n", with: "\r\n"))
     }
 
     func currentTranscript() -> String {
@@ -111,8 +112,23 @@ final class SwiftTermSession: NSObject, TerminalSession {
         guard !output.isEmpty else { return }
         let snapshot = terminalView.getTerminal().getBufferAsData(kind: .normal)
         guard let text = String(data: snapshot, encoding: .utf8) else { return }
-        transcript = String(text.suffix(transcriptLimit))
+        transcript = String(Self.normalizedTranscript(text).suffix(transcriptLimit))
         onTranscriptChanged?(transcript)
+    }
+
+    private static func normalizedTranscript(_ text: String) -> String {
+        let normalized = text
+            .replacingOccurrences(of: "\r\n", with: "\n")
+            .replacingOccurrences(of: "\r", with: "\n")
+        var lines = normalized.components(separatedBy: "\n")
+        // The exported buffer includes unused rows below the last output.
+        while let last = lines.last, last.trimmingCharacters(in: .whitespaces).isEmpty {
+            lines.removeLast()
+        }
+        guard !lines.isEmpty else { return "" }
+        // Leave the next shell prompt on its own line, including old snapshots
+        // whose final line did not have a newline.
+        return lines.joined(separator: "\n") + "\n"
     }
 
     private static func plainText(from text: String) -> String {

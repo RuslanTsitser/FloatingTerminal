@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		E75BC926F70244B599D946A1 /* SwiftTermSessionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 32D459B324AE4E858FA2FA01 /* SwiftTermSessionTests.swift */; };
 		A11C0A000000000000000001 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A11C0A000000000000000002 /* Assets.xcassets */; };
 		08AAE215ACC2B314B4423F7B /* TerminalSessionSnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = 56BA3959D9CE89729EFAF1CB /* TerminalSessionSnapshot.swift */; };
 		0CED07D587DF2CE88A92611A /* UserDefaultsTerminalSessionSnapshotStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 41F3420A69EC7ED56D4EE1CF /* UserDefaultsTerminalSessionSnapshotStore.swift */; };
@@ -47,6 +48,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		32D459B324AE4E858FA2FA01 /* SwiftTermSessionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftTermSessionTests.swift; sourceTree = "<group>"; };
 		A11C0A000000000000000002 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		052525C7A8F557585BB583C9 /* HotKeySettingsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HotKeySettingsTests.swift; sourceTree = "<group>"; };
 		15A882D39A05A08B77D0B985 /* SwiftTermSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftTermSession.swift; sourceTree = "<group>"; };
@@ -178,6 +180,7 @@
 			isa = PBXGroup;
 			children = (
 				052525C7A8F557585BB583C9 /* HotKeySettingsTests.swift */,
+				32D459B324AE4E858FA2FA01 /* SwiftTermSessionTests.swift */,
 				2ABCF458B9EBF97596BCE226 /* TerminalSessionSnapshotStoreTests.swift */,
 				83D2A31A3133FDAA4DE282DF /* TerminalViewStateTests.swift */,
 			);
@@ -343,6 +346,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				E4C3C26FD6E32F53ADDC40D9 /* HotKeySettingsTests.swift in Sources */,
+				E75BC926F70244B599D946A1 /* SwiftTermSessionTests.swift in Sources */,
 				6658A49F64B35D95D1394B05 /* TerminalSessionSnapshotStoreTests.swift in Sources */,
 				D39DB1EBB93E8D087B0C90BE /* TerminalViewStateTests.swift in Sources */,
 			);
