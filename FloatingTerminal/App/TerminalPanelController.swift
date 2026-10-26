@@ -91,8 +91,9 @@ final class TerminalPanelController: NSObject, NSWindowDelegate, NSToolbarDelega
             positionBelowMenuBar(anchorButton: anchorButton)
             hasPositionedPanel = true
         }
-        NSApp.activate(ignoringOtherApps: true)
-        panel.makeKeyAndOrderFront(nil)
+        // Activating the app would switch away from another app's full-screen Space.
+        panel.orderFrontRegardless()
+        panel.makeKey()
         DispatchQueue.main.async { [weak self] in
             guard let self else { return }
             self.panel.makeFirstResponder(self.workspaceState.selectedTerminalView)
@@ -200,7 +201,7 @@ final class TerminalPanelController: NSObject, NSWindowDelegate, NSToolbarDelega
     private func makePanel() -> FloatingTerminalPanel {
         let panel = FloatingTerminalPanel(
             contentRect: NSRect(x: 0, y: 0, width: 900, height: 560),
-            styleMask: [.titled, .closable, .miniaturizable, .resizable],
+            styleMask: [.titled, .closable, .miniaturizable, .resizable, .nonactivatingPanel],
             backing: .buffered,
             defer: false
         )
@@ -330,8 +331,8 @@ final class TerminalPanelController: NSObject, NSWindowDelegate, NSToolbarDelega
         shouldRestoreFocusUntil = nil
         DispatchQueue.main.async { [weak self] in
             guard let self, self.panel.isVisible else { return }
-            NSApp.activate(ignoringOtherApps: true)
-            self.panel.makeKeyAndOrderFront(nil)
+            self.panel.orderFrontRegardless()
+            self.panel.makeKey()
             self.panel.makeFirstResponder(self.workspaceState.selectedTerminalView)
         }
     }
